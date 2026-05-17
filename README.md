@@ -142,7 +142,7 @@ python -m pytest -q -p no:cacheprovider tests\test_range_attack_simulation.py te
 
 ## Statement
 
-项目名称（Project Name）：DHS-DILOC
+项目名称（Project Name）：UAV 辅助测距定位时变距离扩大攻击仿真
 
 项目作者（Author）：Jinwen He, Zhen Chen
 
