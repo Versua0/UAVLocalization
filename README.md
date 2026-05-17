@@ -1,23 +1,9 @@
-## UAV 辅助测距定位时变距离扩大攻击仿真（当前版本）
+## UAV 辅助测距定位时变距离扩大攻击仿真
 
-本仓库目前包含两条思路：
 
-- 旧链路：`EKF + NIS`（针对二维位置观测注入偏移）
-- 新链路（当前任务重点）：`无人机轨迹 + 多次测距 + 时变距离扩大攻击 + L2/L1 定位`
+## 1. 问题内容
 
-本文档重点说明新链路的数据流、绘图数据来源和默认实验结果。
-
-## 1. 问题定义（当前实现）
-
-目标是定位一个无 GPS 的待定位节点，方法是让无人机沿轨迹飞行，在多个时刻对该节点测距，得到一组标量测距值后用定位算法求解节点坐标。
-
-攻击者能力建模（已实现）：
-
-- 能观测无人机轨迹
-- 能对测距链路施加“距离扩大”攻击（只能增加距离，不能缩短）
-- 注入是时变的，并随无人机轨迹几何关系变化
-- 攻击目标是将最终定位结果拉向一个错误位置（`fake_position`）
-
+本项目为无人机辅助无线传感器网络测距定位与攻击仿真代码，围绕无 GPS 待定位节点的坐标估计问题，构建无人机轨迹生成、多时刻测距、时变距离扩大攻击、定位求解和结果分析等模块。代码实现了 L2/L1 非线性定位、主动机动和参数配置等功能，支持调整轨迹形状、测距噪声、攻击启动时刻和偏差约束等参数。项目可用于理解 UAV 辅助定位流程，验证不同测距条件下的定位算法表现，并作为相关仿真教学、算法测试和二次开发的基础代码。
 ## 2. 当前数据流（端到端）
 
 入口文件：`src/range_localization_simulation.py`
@@ -71,7 +57,7 @@
 - 函数：`run_range_localization_experiment()`
 - 输出 `result` 字典（供绘图和分析使用）
 
-## 3. 绘图（图里每个子图的数据来源）
+## 3. 绘图
 
 绘图文件：`src/plot_range_localization_results.py`
 
@@ -129,32 +115,7 @@
 
 - 比较受攻击后解算的残差分布，以及 L1 与 L2 的差异
 
-## 4. 当前默认实验结果（示例）
-
-使用默认配置（`build_default_range_localization_config()`）运行得到的一个结果示例：
-
-- `clean_l2_error`: `0.0400 m`
-- `clean_l1_error`: `0.0400 m`
-- `attacked_l2_error_to_true`: `32.2726 m`
-- `attacked_l2_error_to_fake`: `6.9541 m`
-- `attacked_l1_error_to_true`: `32.2726 m`
-- `attacked_l1_error_to_fake`: `6.9541 m`
-- `attack_bias_mean/max`: `11.9765 / 28.3835 m`
-- `attack_delay_max`: `189.354 ns`
-- `success_l2 / success_l1`: `True / True`
-
-解释：
-
-- 未攻击时，定位误差约 `4 cm`
-- 攻击后，L2/L1 解都显著偏离真实位置（约 `32 m`）
-- 同时更接近假目标位置（约 `7 m`），说明攻击成功扭曲了解算结果
-
-说明：
-
-- 以上数值来自当前默认参数与随机种子（`random_seed=42`）
-- 修改轨迹、假目标位置、攻击约束或噪声后，结果会变化
-
-## 5. 如何运行（当前链路）
+##  如何运行
 
 ### 运行仿真并保存图
 
@@ -179,26 +140,10 @@ python -c "from src.range_localization_simulation import main; main(plot=True, s
 python -m pytest -q -p no:cacheprovider tests\test_range_attack_simulation.py tests\test_localization_solver.py
 ```
 
-## 6. 关键参数（可直接调）
+## Statement
 
-文件：`config/range_parameters.py`
+项目名称（Project Name）：DHS-DILOC
 
-建议重点调整：
+项目作者（Author）：Jinwen He, Zhen Chen
 
-- `attack.fake_position_xy`：攻击希望把定位结果拉向哪里
-- `attack.start_time`：攻击启动时刻
-- `attack.max_bias_m`：最大距离扩大幅度
-- `attack.max_slew_rate_mps`：偏差变化率上限（更贴近中继硬件能力）
-- `attack.smooth_window`：偏差平滑窗口
-- `measurement.range_noise_std`：测距噪声强度
-- `trajectory.*`：无人机轨迹形状与覆盖范围
-
-## 7. 后续建议（与你场景更贴近）
-
-当前实现为“理想攻击者”版本（构造偏差时使用了真实目标位置），适合作为上界分析。
-
-如果要进一步贴近 M1/M2 场景，建议下一步做：
-
-- 攻击者仅知道目标粗估计（而不是真值）
-- 显式建模 M1->M2 高速链路时延和抖动
-- 在约束下优化 `bias_k`（最大化定位扭曲、最小化被检测风险）  
+作者单位（Affiliation）：暨南大学网络空间安全学院（College of Cyber Security, Jinan University）
